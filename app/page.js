@@ -3,14 +3,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { format, isToday, isTomorrow, parseISO } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { 
-  Calendar, 
-  CheckCircle2, 
-  Circle, 
-  Clock, 
-  Lightbulb, 
-  ListTodo, 
-  RefreshCw, 
+import {
+  Calendar,
+  CheckCircle2,
+  Circle,
+  Clock,
+  ListTodo,
+  RefreshCw,
   Repeat,
   ExternalLink,
   AlertCircle,
@@ -213,7 +212,7 @@ export default function Dashboard() {
           </section>
         </div>
 
-        {/* Right Column - Routines, Ideas, Completed */}
+        {/* Right Column - Routines, Completed */}
         <div className="lg:col-span-1 space-y-6">
           {/* Routines */}
           <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.25s' }}>
@@ -236,29 +235,8 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* Ideas */}
-          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-yellow-500/20 rounded-lg">
-                <Lightbulb className="w-5 h-5 text-yellow-400" />
-              </div>
-              <h2 className="text-lg font-semibold">아이디어</h2>
-            </div>
-            <div className="space-y-2">
-              {notionData?.ideas?.length === 0 ? (
-                <p className="text-surface-200 text-sm py-4 text-center">
-                  등록된 아이디어가 없습니다
-                </p>
-              ) : (
-                notionData?.ideas?.map((idea, idx) => (
-                  <IdeaCard key={idea.id || idx} idea={idea} />
-                ))
-              )}
-            </div>
-          </section>
-
           {/* Recently Completed */}
-          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.35s' }}>
+          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-emerald-500/20 rounded-lg">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
@@ -382,28 +360,6 @@ function RoutineCard({ routine }) {
         </span>
       </div>
       <span className="text-xs text-surface-200 flex-shrink-0">{routine.frequency}</span>
-    </a>
-  );
-}
-
-// Idea Card Component
-function IdeaCard({ idea }) {
-  return (
-    <a
-      href={idea.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block p-3 bg-surface-900/50 hover:bg-surface-900 rounded-xl border border-white/5 hover:border-yellow-500/30 transition-all duration-200 group"
-    >
-      <div className="flex items-center gap-2">
-        <span className="truncate font-medium">{idea.title}</span>
-        <ExternalLink className="w-3 h-3 text-surface-200 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
-      </div>
-      <div className="flex items-center gap-2 mt-1 text-xs text-surface-200">
-        <span>{idea.status}</span>
-        <span>•</span>
-        <span>{idea.area}</span>
-      </div>
     </a>
   );
 }
