@@ -70,15 +70,38 @@ export default function Dashboard() {
     );
   }
 
-  const todayEvents = calendarData?.filter(e => {
+  // 캘린더 이벤트와 작업 마감일을 합쳐서 처리
+  const allEvents = [
+    ...(calendarData || []).map(e => ({ ...e, type: 'calendar' })),
+    ...(notionData?.tasks?.inProgress || [])
+      .filter(t => t.dueDate)
+      .map(t => ({
+        type: 'task',
+        start: t.dueDate,
+        title: t.title,
+        task: t
+      })),
+    ...(notionData?.tasks?.waiting || [])
+      .filter(t => t.dueDate)
+      .map(t => ({
+        type: 'task',
+        start: t.dueDate,
+        title: t.title,
+        task: t
+      })),
+  ];
+
+  const todayEvents = allEvents.filter(e => {
     const eventDate = parseISO(e.start);
     return isToday(eventDate);
-  }) || [];
+  });
 
-  const upcomingEvents = calendarData?.filter(e => {
-    const eventDate = parseISO(e.start);
-    return !isToday(eventDate);
-  }) || [];
+  const upcomingEvents = allEvents
+    .filter(e => {
+      const eventDate = parseISO(e.start);
+      return !isToday(eventDate);
+    })
+    .sort((a, b) => parseISO(a.start) - parseISO(b.start));
 
   return (
     <main className="min-h-screen p-4 md:p-8">
@@ -287,16 +310,64 @@ export default function Dashboard() {
 
 // Event Card Component
 function EventCard({ event, showDate = false }) {
-  const startTime = event.isAllDay 
-    ? '종일' 
+  // 작업 마감일인 경우
+  if (event.type === 'task') {
+    const task = event.task;
+    const dateLabel = showDate
+      ? format(parseISO(event.start), 'M/d (E)', { locale: ko })
+      : null;
+
+    const priorityClass = {
+      '🔴 긴급': 'priority-urgent',
+      '🟡 중요': 'priority-important',
+      '🟢 보통': 'priority-normal',
+    }[task.priority] || '';
+
+    return (
+      <a
+        href={task.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="block p-3 bg-surface-900/50 hover:bg-surface-900 rounded-xl border border-white/5 hover:border-accent/30 transition-all duration-200 group"
+      >
+        <div className="flex items-start gap-3">
+          <div className="text-amber-400 font-mono text-sm mt-0.5 min-w-[50px]">
+            마감
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <Circle className={`w-3 h-3 flex-shrink-0 ${priorityClass}`} />
+              <span className="font-medium truncate">{task.title}</span>
+              <ExternalLink className="w-3 h-3 text-surface-200 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
+            </div>
+            <div className="flex items-center gap-2 mt-1 text-xs text-surface-200">
+              <span>{task.area}</span>
+              {showDate && (
+                <>
+                  <span>•</span>
+                  <span className={isOverdue(task.dueDate) ? 'text-red-400' : isTomorrow(parseISO(task.dueDate)) ? 'text-amber-400' : ''}>
+                    {dateLabel}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </a>
+    );
+  }
+
+  // 캘린더 이벤트인 경우
+  const startTime = event.isAllDay
+    ? '종일'
     : format(parseISO(event.start), 'HH:mm');
-  
-  const dateLabel = showDate 
+
+  const dateLabel = showDate
     ? format(parseISO(event.start), 'M/d (E)', { locale: ko })
     : null;
 
   return (
-    <a 
+    <a
       href={event.htmlLink}
       target="_blank"
       rel="noopener noreferrer"
