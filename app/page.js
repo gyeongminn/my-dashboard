@@ -210,12 +210,36 @@ export default function Dashboard() {
               )}
             </div>
           </section>
+
+          {/* On Hold */}
+          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.25s' }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-gray-500/20 rounded-lg">
+                <ListTodo className="w-5 h-5 text-gray-400" />
+              </div>
+              <h2 className="text-lg font-semibold">보류</h2>
+              <span className="ml-auto badge badge-hold">
+                {notionData?.tasks?.onHold?.length || 0}
+              </span>
+            </div>
+            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              {notionData?.tasks?.onHold?.length === 0 ? (
+                <p className="text-surface-200 text-sm py-4 text-center">
+                  보류중인 작업이 없습니다
+                </p>
+              ) : (
+                notionData?.tasks?.onHold?.map((task, idx) => (
+                  <TaskCard key={task.id || idx} task={task} />
+                ))
+              )}
+            </div>
+          </section>
         </div>
 
         {/* Right Column - Routines, Completed */}
         <div className="lg:col-span-1 space-y-6">
           {/* Routines */}
-          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.25s' }}>
+          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-purple-500/20 rounded-lg">
                 <Repeat className="w-5 h-5 text-purple-400" />
@@ -236,7 +260,7 @@ export default function Dashboard() {
           </section>
 
           {/* Recently Completed */}
-          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
+          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.35s' }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-emerald-500/20 rounded-lg">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
