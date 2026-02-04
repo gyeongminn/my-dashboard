@@ -16,8 +16,10 @@ import {
   Loader2,
   Inbox,
   PlayCircle,
-  LogOut
+  LogOut,
+  Plus
 } from 'lucide-react';
+import TaskModal from './components/TaskModal';
 
 const REFRESH_INTERVAL = parseInt(process.env.NEXT_PUBLIC_REFRESH_INTERVAL || '60000');
 
@@ -27,6 +29,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -66,6 +70,42 @@ export default function Dashboard() {
       window.location.href = '/login';
     } catch (error) {
       console.error('Logout error:', error);
+    }
+  };
+
+  const handleTaskClick = (task) => {
+    setSelectedTask(task);
+    setModalOpen(true);
+  };
+
+  const handleAddTask = () => {
+    setSelectedTask(null);
+    setModalOpen(true);
+  };
+
+  const handleSaveTask = async (taskId, formData) => {
+    try {
+      const url = '/api/notion/task';
+      const method = taskId ? 'PATCH' : 'POST';
+      const body = taskId ? { id: taskId, ...formData } : formData;
+
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '저장 실패');
+      }
+
+      // 데이터 새로고침
+      await fetchData();
+    } catch (error) {
+      console.error('Save task error:', error);
+      throw error;
     }
   };
 
@@ -213,6 +253,13 @@ export default function Dashboard() {
               <span className="ml-auto badge badge-progress">
                 {notionData?.tasks?.inProgress?.length || 0}
               </span>
+              <button
+                onClick={handleAddTask}
+                className="p-1.5 hover:bg-blue-500/20 rounded-lg transition-colors"
+                title="새 작업 추가"
+              >
+                <Plus className="w-4 h-4 text-blue-400" />
+              </button>
             </div>
             <div className="space-y-2">
               {notionData?.tasks?.inProgress?.length === 0 ? (
@@ -221,7 +268,7 @@ export default function Dashboard() {
                 </p>
               ) : (
                 notionData?.tasks?.inProgress?.map((task, idx) => (
-                  <TaskCard key={task.id || idx} task={task} />
+                  <TaskCard key={task.id || idx} task={task} onClick={() => handleTaskClick(task)} />
                 ))
               )}
             </div>
@@ -245,7 +292,7 @@ export default function Dashboard() {
                 </p>
               ) : (
                 notionData?.tasks?.waiting?.map((task, idx) => (
-                  <TaskCard key={task.id || idx} task={task} />
+                  <TaskCard key={task.id || idx} task={task} onClick={() => handleTaskClick(task)} />
                 ))
               )}
             </div>
@@ -269,7 +316,7 @@ export default function Dashboard() {
                 </p>
               ) : (
                 notionData?.tasks?.onHold?.map((task, idx) => (
-                  <TaskCard key={task.id || idx} task={task} />
+                  <TaskCard key={task.id || idx} task={task} onClick={() => handleTaskClick(task)} />
                 ))
               )}
             </div>
@@ -321,6 +368,15 @@ export default function Dashboard() {
           </section>
         </div>
       </div>
+
+      {/* Task Modal */}
+      {modalOpen && (
+        <TaskModal
+          task={selectedTask}
+          onClose={() => setModalOpen(false)}
+          onSave={handleSaveTask}
+        />
+      )}
     </main>
   );
 }
@@ -414,7 +470,7 @@ function EventCard({ event, showDate = false }) {
 }
 
 // Task Card Component
-function TaskCard({ task }) {
+function TaskCard({ task, onClick }) {
   const priorityClass = {
     '🔴 긴급': 'priority-urgent',
     '🟡 중요': 'priority-important',
@@ -422,11 +478,12 @@ function TaskCard({ task }) {
   }[task.priority] || '';
 
   return (
-    <a
-      href={task.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="block p-3 bg-surface-900/50 hover:bg-surface-900 rounded-xl border border-white/5 hover:border-accent/30 transition-all duration-200 group"
+    <div
+      onClick={(e) => {
+        e.preventDefault();
+        onClick?.();
+      }}
+      className="block p-3 bg-surface-900/50 hover:bg-surface-900 rounded-xl border border-white/5 hover:border-accent/30 transition-all duration-200 group cursor-pointer"
     >
       <div className="flex items-start gap-3">
         <Circle className={`w-4 h-4 mt-0.5 flex-shrink-0 ${priorityClass}`} />
@@ -448,7 +505,7 @@ function TaskCard({ task }) {
           </div>
         </div>
       </div>
-    </a>
+    </div>
   );
 }
 
