@@ -230,70 +230,10 @@ export default function Dashboard() {
 
       {/* Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Calendar */}
-        <div className="lg:col-span-1 space-y-6">
-          {/* Today's Schedule */}
-          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-accent/20 rounded-lg">
-                <Calendar className="w-5 h-5 text-accent" />
-              </div>
-              <h2 className="text-lg font-semibold">오늘 일정</h2>
-              <span className="ml-auto badge badge-progress">
-                {todayEvents.length}
-              </span>
-            </div>
-            <div className="space-y-3">
-              {todayEvents.length === 0 ? (
-                <p className="text-surface-200 text-sm py-4 text-center">
-                  오늘 예정된 일정이 없습니다
-                </p>
-              ) : (
-                todayEvents.map((event, idx) => (
-                  <EventCard
-                    key={event.id || idx}
-                    event={event}
-                    onTaskClick={event.type === 'task' ? () => handleTaskClick(event.task) : undefined}
-                  />
-                ))
-              )}
-            </div>
-          </section>
-
-          {/* Upcoming Events */}
-          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-blue-500/20 rounded-lg">
-                <Clock className="w-5 h-5 text-blue-400" />
-              </div>
-              <h2 className="text-lg font-semibold">다가오는 일정</h2>
-              <span className="ml-auto badge badge-waiting">
-                {upcomingEvents.length}
-              </span>
-            </div>
-            <div className="space-y-3 max-h-[300px] overflow-y-auto">
-              {upcomingEvents.length === 0 ? (
-                <p className="text-surface-200 text-sm py-4 text-center">
-                  예정된 일정이 없습니다
-                </p>
-              ) : (
-                upcomingEvents.slice(0, 5).map((event, idx) => (
-                  <EventCard
-                    key={event.id || idx}
-                    event={event}
-                    showDate
-                    onTaskClick={event.type === 'task' ? () => handleTaskClick(event.task) : undefined}
-                  />
-                ))
-              )}
-            </div>
-          </section>
-        </div>
-
-        {/* Middle Column - Tasks */}
-        <div className="lg:col-span-1 space-y-6">
+        {/* First Column (Mobile: 1st, Desktop: Left) - In Progress */}
+        <div className="lg:col-span-1 lg:order-2 space-y-6">
           {/* In Progress */}
-          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-blue-500/20 rounded-lg">
                 <PlayCircle className="w-5 h-5 text-blue-400" />
@@ -365,8 +305,68 @@ export default function Dashboard() {
           </section>
         </div>
 
-        {/* Right Column - Routines, Completed */}
-        <div className="lg:col-span-1 space-y-6">
+        {/* Second Column (Mobile: 2nd, Desktop: Center) - Schedule */}
+        <div className="lg:col-span-1 lg:order-1 space-y-6">
+          {/* Today's Schedule */}
+          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.15s' }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-accent/20 rounded-lg">
+                <Calendar className="w-5 h-5 text-accent" />
+              </div>
+              <h2 className="text-lg font-semibold">오늘 일정</h2>
+              <span className="ml-auto badge badge-progress">
+                {todayEvents.length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {todayEvents.length === 0 ? (
+                <p className="text-surface-200 text-sm py-4 text-center">
+                  오늘 예정된 일정이 없습니다
+                </p>
+              ) : (
+                todayEvents.map((event, idx) => (
+                  <EventCard
+                    key={event.id || idx}
+                    event={event}
+                    onTaskClick={event.type === 'task' ? () => handleTaskClick(event.task) : undefined}
+                  />
+                ))
+              )}
+            </div>
+          </section>
+
+          {/* Upcoming Events */}
+          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-blue-500/20 rounded-lg">
+                <Clock className="w-5 h-5 text-blue-400" />
+              </div>
+              <h2 className="text-lg font-semibold">다가오는 일정</h2>
+              <span className="ml-auto badge badge-waiting">
+                {upcomingEvents.length}
+              </span>
+            </div>
+            <div className="space-y-3 max-h-[300px] overflow-y-auto">
+              {upcomingEvents.length === 0 ? (
+                <p className="text-surface-200 text-sm py-4 text-center">
+                  예정된 일정이 없습니다
+                </p>
+              ) : (
+                upcomingEvents.slice(0, 5).map((event, idx) => (
+                  <EventCard
+                    key={event.id || idx}
+                    event={event}
+                    showDate
+                    onTaskClick={event.type === 'task' ? () => handleTaskClick(event.task) : undefined}
+                  />
+                ))
+              )}
+            </div>
+          </section>
+        </div>
+
+        {/* Third Column (Mobile: 3rd, Desktop: Right) - Routines & Completed */}
+        <div className="lg:col-span-1 lg:order-3 space-y-6">
           {/* Routines */}
           <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center gap-3 mb-4">
