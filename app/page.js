@@ -220,7 +220,11 @@ export default function Dashboard() {
                 </p>
               ) : (
                 todayEvents.map((event, idx) => (
-                  <EventCard key={event.id || idx} event={event} />
+                  <EventCard
+                    key={event.id || idx}
+                    event={event}
+                    onTaskClick={event.type === 'task' ? () => handleTaskClick(event.task) : undefined}
+                  />
                 ))
               )}
             </div>
@@ -241,7 +245,12 @@ export default function Dashboard() {
                 </p>
               ) : (
                 upcomingEvents.slice(0, 5).map((event, idx) => (
-                  <EventCard key={event.id || idx} event={event} showDate />
+                  <EventCard
+                    key={event.id || idx}
+                    event={event}
+                    showDate
+                    onTaskClick={event.type === 'task' ? () => handleTaskClick(event.task) : undefined}
+                  />
                 ))
               )}
             </div>
@@ -361,7 +370,7 @@ export default function Dashboard() {
                 </p>
               ) : (
                 notionData?.tasks?.completed?.map((task, idx) => (
-                  <CompletedTaskCard key={task.id || idx} task={task} />
+                  <CompletedTaskCard key={task.id || idx} task={task} onClick={() => handleTaskClick(task)} />
                 ))
               )}
             </div>
@@ -382,30 +391,36 @@ export default function Dashboard() {
 }
 
 // Event Card Component
-function EventCard({ event, showDate = false }) {
+function EventCard({ event, showDate = false, onTaskClick }) {
   // 작업 마감일인 경우
   if (event.type === 'task') {
     const task = event.task;
+    const eventDate = parseISO(event.start);
     const dateLabel = showDate
-      ? format(parseISO(event.start), 'M/d (E)', { locale: ko })
+      ? format(eventDate, 'M/d (E)', { locale: ko })
       : null;
 
     const priorityClass = {
       '🔴 긴급': 'priority-urgent',
       '🟡 중요': 'priority-important',
       '🟢 보통': 'priority-normal',
+      '🟤 낮음': 'priority-low',
     }[task.priority] || '';
 
+    // 오늘 마감인지 확인
+    const dueDateLabel = isToday(eventDate) ? '오늘 마감' : '마감';
+
     return (
-      <a
-        href={task.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="block p-3 bg-surface-900/50 hover:bg-surface-900 rounded-xl border border-white/5 hover:border-accent/30 transition-all duration-200 group"
+      <div
+        onClick={(e) => {
+          e.preventDefault();
+          onTaskClick?.();
+        }}
+        className="block p-3 bg-surface-900/50 hover:bg-surface-900 rounded-xl border border-white/5 hover:border-accent/30 transition-all duration-200 group cursor-pointer"
       >
         <div className="flex items-start gap-3">
-          <div className="text-amber-400 font-mono text-sm mt-0.5 min-w-[50px]">
-            마감
+          <div className="text-amber-400 font-mono text-sm mt-0.5 min-w-[70px]">
+            {dueDateLabel}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -426,7 +441,7 @@ function EventCard({ event, showDate = false }) {
             </div>
           </div>
         </div>
-      </a>
+      </div>
     );
   }
 
@@ -535,13 +550,14 @@ function RoutineCard({ routine }) {
 }
 
 // Completed Task Card Component
-function CompletedTaskCard({ task }) {
+function CompletedTaskCard({ task, onClick }) {
   return (
-    <a
-      href={task.url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="flex items-center gap-3 p-3 bg-surface-900/50 hover:bg-surface-900 rounded-xl border border-white/5 hover:border-emerald-500/30 transition-all duration-200 group"
+    <div
+      onClick={(e) => {
+        e.preventDefault();
+        onClick?.();
+      }}
+      className="flex items-center gap-3 p-3 bg-surface-900/50 hover:bg-surface-900 rounded-xl border border-white/5 hover:border-emerald-500/30 transition-all duration-200 group cursor-pointer"
     >
       <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
       <span className="truncate text-surface-200">{task.title}</span>
@@ -550,7 +566,7 @@ function CompletedTaskCard({ task }) {
           {format(parseISO(task.completedDate), 'M/d')}
         </span>
       )}
-    </a>
+    </div>
   );
 }
 
