@@ -24,10 +24,12 @@ export default function LoginPage() {
 
       const data = await response.json();
 
+      console.log('Login response:', { status: response.status, data });
+
       if (data.success) {
         // Redirect to dashboard
-        router.push('/');
-        router.refresh();
+        console.log('Login successful, redirecting...');
+        window.location.href = '/';
       } else {
         setError(data.error || '로그인에 실패했습니다');
       }
