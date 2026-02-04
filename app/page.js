@@ -415,8 +415,8 @@ function EventCard({ event, showDate = false, onTaskClick }) {
       '🟤 낮음': 'priority-low',
     }[task.priority] || '';
 
-    // 오늘 마감인지 확인
-    const dueDateLabel = isToday(eventDate) ? '오늘 마감' : '마감';
+    // 오늘 마감인 경우만 라벨 표시
+    const dueDateLabel = isToday(eventDate) ? '오늘 마감' : null;
 
     return (
       <div
@@ -427,9 +427,11 @@ function EventCard({ event, showDate = false, onTaskClick }) {
         className="block p-3 bg-surface-900/50 hover:bg-surface-900 rounded-xl border border-white/5 hover:border-accent/30 transition-all duration-200 group cursor-pointer"
       >
         <div className="flex items-start gap-3">
-          <div className="text-amber-400 font-mono text-sm mt-0.5 min-w-[70px]">
-            {dueDateLabel}
-          </div>
+          {dueDateLabel && (
+            <div className="text-amber-400 font-mono text-sm mt-0.5 min-w-[70px]">
+              {dueDateLabel}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
               <Circle className={`w-3 h-3 flex-shrink-0 ${priorityClass}`} />
