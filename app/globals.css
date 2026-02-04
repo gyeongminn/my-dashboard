@@ -142,6 +142,10 @@ body {
 }
 
 /* Custom date picker and select styles */
+input[type="date"] {
+  color-scheme: dark;
+}
+
 input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0.7);
   cursor: pointer;
