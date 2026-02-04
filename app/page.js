@@ -15,7 +15,8 @@ import {
   AlertCircle,
   Loader2,
   Inbox,
-  PlayCircle
+  PlayCircle,
+  LogOut
 } from 'lucide-react';
 
 const REFRESH_INTERVAL = parseInt(process.env.NEXT_PUBLIC_REFRESH_INTERVAL || '60000');
@@ -57,6 +58,15 @@ export default function Dashboard() {
   const handleRefresh = () => {
     setRefreshing(true);
     fetchData();
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      window.location.href = '/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
   };
 
   if (loading) {
@@ -129,6 +139,13 @@ export default function Dashboard() {
             >
               <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
               <span className="text-sm">새로고침</span>
+            </button>
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-2 px-4 py-2 bg-surface-800/60 hover:bg-surface-800 border border-white/10 rounded-xl transition-all duration-200 hover:border-red-500/50"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="text-sm">로그아웃</span>
             </button>
           </div>
         </div>
