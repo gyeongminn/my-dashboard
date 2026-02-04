@@ -113,6 +113,7 @@ export default function TaskModal({ task, onClose, onSave }) {
                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                 className="w-full px-4 py-3 bg-surface-800/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
               >
+                <option value="🟤 낮음">🟤 낮음</option>
                 <option value="🟢 보통">🟢 보통</option>
                 <option value="🟡 중요">🟡 중요</option>
                 <option value="🔴 긴급">🔴 긴급</option>
@@ -128,14 +129,17 @@ export default function TaskModal({ task, onClose, onSave }) {
                 <Tag className="w-4 h-4 inline mr-1" />
                 영역
               </label>
-              <input
+              <select
                 id="area"
-                type="text"
                 value={formData.area}
                 onChange={(e) => setFormData({ ...formData, area: e.target.value })}
                 className="w-full px-4 py-3 bg-surface-800/50 border border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent transition-all"
-                placeholder="예: 개발, 디자인, 기획"
-              />
+              >
+                <option value="">선택 안함</option>
+                <option value="💼 업무">💼 업무</option>
+                <option value="🏠 개인">🏠 개인</option>
+                <option value="📚 학습">📚 학습</option>
+              </select>
             </div>
 
             {/* Due Date */}

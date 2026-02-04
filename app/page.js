@@ -166,12 +166,19 @@ export default function Dashboard() {
               {format(new Date(), 'yyyy년 M월 d일 EEEE', { locale: ko })}
             </p>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {lastUpdated && (
               <span className="text-sm text-surface-200">
                 마지막 업데이트: {format(lastUpdated, 'HH:mm:ss')}
               </span>
             )}
+            <button
+              onClick={handleAddTask}
+              className="flex items-center gap-2 px-4 py-2 bg-accent hover:bg-accent-light border border-accent/50 rounded-xl transition-all duration-200 font-medium"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="text-sm">새 작업</span>
+            </button>
             <button
               onClick={handleRefresh}
               disabled={refreshing}
@@ -253,13 +260,6 @@ export default function Dashboard() {
               <span className="ml-auto badge badge-progress">
                 {notionData?.tasks?.inProgress?.length || 0}
               </span>
-              <button
-                onClick={handleAddTask}
-                className="p-1.5 hover:bg-blue-500/20 rounded-lg transition-colors"
-                title="새 작업 추가"
-              >
-                <Plus className="w-4 h-4 text-blue-400" />
-              </button>
             </div>
             <div className="space-y-2">
               {notionData?.tasks?.inProgress?.length === 0 ? (
@@ -475,6 +475,7 @@ function TaskCard({ task, onClick }) {
     '🔴 긴급': 'priority-urgent',
     '🟡 중요': 'priority-important',
     '🟢 보통': 'priority-normal',
+    '🟤 낮음': 'priority-low',
   }[task.priority] || '';
 
   return (
