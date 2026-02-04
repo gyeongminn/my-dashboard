@@ -139,6 +139,14 @@ export default function Dashboard() {
         title: t.title,
         task: t
       })),
+    ...(notionData?.tasks?.onHold || [])
+      .filter(t => t.dueDate)
+      .map(t => ({
+        type: 'task',
+        start: t.dueDate,
+        title: t.title,
+        task: t
+      })),
   ];
 
   const todayEvents = allEvents.filter(e => {
