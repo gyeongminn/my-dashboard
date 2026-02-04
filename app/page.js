@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { format, isToday, isTomorrow, parseISO } from 'date-fns';
+import { format, isToday, isTomorrow, parseISO, differenceInDays } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import {
   Calendar,
@@ -413,9 +413,22 @@ function EventCard({ event, showDate = false, onTaskClick }) {
   if (event.type === 'task') {
     const task = event.task;
     const eventDate = parseISO(event.start);
-    const dateLabel = showDate
-      ? format(eventDate, 'M/d (E)', { locale: ko })
-      : null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysLeft = differenceInDays(eventDate, today);
+
+    // 날짜 라벨 (요일 포함 + 일주일 이내면 D-day 추가)
+    let dateLabel = null;
+    if (showDate) {
+      const dateFormat = format(eventDate, 'M월 d일 (E)', { locale: ko });
+      if (daysLeft >= 0 && daysLeft <= 7) {
+        if (daysLeft === 0) dateLabel = `${dateFormat} - 오늘`;
+        else if (daysLeft === 1) dateLabel = `${dateFormat} - 내일`;
+        else dateLabel = `${dateFormat} - D-${daysLeft}`;
+      } else {
+        dateLabel = dateFormat;
+      }
+    }
 
     const priorityClass = {
       '🔴 긴급': 'priority-urgent',
@@ -449,10 +462,10 @@ function EventCard({ event, showDate = false, onTaskClick }) {
             </div>
             <div className="flex items-center gap-2 mt-1 text-xs text-surface-200">
               <span>{task.area}</span>
-              {showDate && (
+              {showDate && dateLabel && (
                 <>
                   <span>•</span>
-                  <span className={isOverdue(task.dueDate) ? 'text-red-400' : isTomorrow(parseISO(task.dueDate)) ? 'text-amber-400' : ''}>
+                  <span className={isOverdue(task.dueDate) ? 'text-red-400' : daysLeft <= 1 ? 'text-amber-400' : ''}>
                     {dateLabel}
                   </span>
                 </>
@@ -470,7 +483,7 @@ function EventCard({ event, showDate = false, onTaskClick }) {
     : format(parseISO(event.start), 'HH:mm');
 
   const dateLabel = showDate
-    ? format(parseISO(event.start), 'M/d (E)', { locale: ko })
+    ? format(parseISO(event.start), 'M월 d일 (E)', { locale: ko })
     : null;
 
   return (
@@ -512,6 +525,25 @@ function TaskCard({ task, onClick }) {
     '🟤 낮음': 'priority-low',
   }[task.priority] || '';
 
+  const formatDueDate = (dateString) => {
+    const date = parseISO(dateString);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const daysLeft = differenceInDays(date, today);
+
+    // 기본 날짜 형식 (요일 포함)
+    const dateFormat = format(date, 'M월 d일 (E)', { locale: ko });
+
+    // 일주일 이내면 남은 날짜 추가
+    if (daysLeft >= 0 && daysLeft <= 7) {
+      if (daysLeft === 0) return `${dateFormat} - 오늘`;
+      if (daysLeft === 1) return `${dateFormat} - 내일`;
+      return `${dateFormat} - D-${daysLeft}`;
+    }
+
+    return dateFormat;
+  };
+
   return (
     <div
       onClick={(e) => {
@@ -533,7 +565,7 @@ function TaskCard({ task, onClick }) {
               <>
                 <span>•</span>
                 <span className={isOverdue(task.dueDate) ? 'text-red-400' : ''}>
-                  마감: {format(parseISO(task.dueDate), 'M/d')}
+                  {formatDueDate(task.dueDate)}
                 </span>
               </>
             )}
@@ -582,7 +614,7 @@ function CompletedTaskCard({ task, onClick }) {
       <span className="truncate text-surface-200">{task.title}</span>
       {task.completedDate && (
         <span className="text-xs text-surface-200 ml-auto flex-shrink-0">
-          {format(parseISO(task.completedDate), 'M/d')}
+          {format(parseISO(task.completedDate), 'M월 d일 (E)', { locale: ko })}
         </span>
       )}
     </div>
