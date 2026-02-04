@@ -109,6 +109,28 @@ export default function Dashboard() {
     }
   };
 
+  const handleDeleteTask = async (taskId) => {
+    try {
+      const response = await fetch('/api/notion/task', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: taskId }),
+      });
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || '삭제 실패');
+      }
+
+      // 데이터 새로고침
+      await fetchData();
+    } catch (error) {
+      console.error('Delete task error:', error);
+      throw error;
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -401,6 +423,7 @@ export default function Dashboard() {
           task={selectedTask}
           onClose={() => setModalOpen(false)}
           onSave={handleSaveTask}
+          onDelete={handleDeleteTask}
         />
       )}
     </main>

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createTask, updateTask } from '@/lib/notion';
+import { createTask, updateTask, deleteTask } from '@/lib/notion';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -53,6 +53,33 @@ export async function PATCH(request) {
     });
   } catch (error) {
     console.error('API Error (Update Task):', error);
+    return NextResponse.json(
+      { success: false, error: error.message },
+      { status: 500 }
+    );
+  }
+}
+
+// 작업 삭제
+export async function DELETE(request) {
+  try {
+    const { id } = await request.json();
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: '작업 ID가 필요합니다' },
+        { status: 400 }
+      );
+    }
+
+    await deleteTask(id);
+
+    return NextResponse.json({
+      success: true,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error('API Error (Delete Task):', error);
     return NextResponse.json(
       { success: false, error: error.message },
       { status: 500 }

@@ -1,9 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Loader2, Calendar, Tag, AlertCircle } from 'lucide-react';
+import { X, Loader2, Calendar, Tag, AlertCircle, Trash2 } from 'lucide-react';
 
-export default function TaskModal({ task, onClose, onSave }) {
+export default function TaskModal({ task, onClose, onSave, onDelete }) {
   const [formData, setFormData] = useState({
     title: '',
     status: '📥 대기',
@@ -13,6 +13,7 @@ export default function TaskModal({ task, onClose, onSave }) {
     memo: '',
   });
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -45,6 +46,26 @@ export default function TaskModal({ task, onClose, onSave }) {
       setError(err.message || '저장 중 오류가 발생했습니다');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!task?.id) return;
+
+    if (!confirm('정말로 이 작업을 삭제하시겠습니까?')) {
+      return;
+    }
+
+    setDeleting(true);
+    setError('');
+
+    try {
+      await onDelete(task.id);
+      onClose();
+    } catch (err) {
+      setError(err.message || '삭제 중 오류가 발생했습니다');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -182,28 +203,52 @@ export default function TaskModal({ task, onClose, onSave }) {
           )}
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-6 py-3 bg-surface-800/60 hover:bg-surface-800 border border-white/10 rounded-xl transition-all"
-            >
-              취소
-            </button>
-            <button
-              type="submit"
-              disabled={saving}
-              className="px-6 py-3 bg-accent hover:bg-accent-light disabled:bg-surface-800 disabled:text-surface-200 rounded-xl font-medium transition-all flex items-center gap-2"
-            >
-              {saving ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  저장 중...
-                </>
-              ) : (
-                '저장'
-              )}
-            </button>
+          <div className="flex justify-between items-center pt-4">
+            {/* Delete Button - Only show for existing tasks */}
+            {task?.id && (
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting || saving}
+                className="px-6 py-3 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 hover:text-red-300 rounded-xl font-medium transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {deleting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    삭제 중...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-4 h-4" />
+                    삭제
+                  </>
+                )}
+              </button>
+            )}
+
+            <div className="flex gap-3 ml-auto">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-3 bg-surface-800/60 hover:bg-surface-800 border border-white/10 rounded-xl transition-all"
+              >
+                취소
+              </button>
+              <button
+                type="submit"
+                disabled={saving || deleting}
+                className="px-6 py-3 bg-accent hover:bg-accent-light disabled:bg-surface-800 disabled:text-surface-200 rounded-xl font-medium transition-all flex items-center gap-2"
+              >
+                {saving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    저장 중...
+                  </>
+                ) : (
+                  '저장'
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>
