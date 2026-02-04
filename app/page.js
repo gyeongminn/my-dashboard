@@ -217,8 +217,8 @@ export default function Dashboard() {
                 <Calendar className="w-5 h-5 text-accent" />
               </div>
               <h2 className="text-lg font-semibold">오늘 일정</h2>
-              <span className="ml-auto text-sm text-surface-200">
-                {todayEvents.length}개
+              <span className="ml-auto badge badge-progress">
+                {todayEvents.length}
               </span>
             </div>
             <div className="space-y-3">
@@ -245,6 +245,9 @@ export default function Dashboard() {
                 <Clock className="w-5 h-5 text-blue-400" />
               </div>
               <h2 className="text-lg font-semibold">다가오는 일정</h2>
+              <span className="ml-auto badge badge-waiting">
+                {upcomingEvents.length}
+              </span>
             </div>
             <div className="space-y-3 max-h-[300px] overflow-y-auto">
               {upcomingEvents.length === 0 ? (
@@ -349,6 +352,9 @@ export default function Dashboard() {
                 <Repeat className="w-5 h-5 text-purple-400" />
               </div>
               <h2 className="text-lg font-semibold">루틴</h2>
+              <span className="ml-auto badge badge-hold">
+                {notionData?.routines?.length || 0}
+              </span>
             </div>
             <div className="space-y-2">
               {notionData?.routines?.length === 0 ? (
@@ -370,6 +376,9 @@ export default function Dashboard() {
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
               </div>
               <h2 className="text-lg font-semibold">최근 완료</h2>
+              <span className="ml-auto badge badge-hold">
+                {notionData?.tasks?.completed?.length || 0}
+              </span>
             </div>
             <div className="space-y-2">
               {notionData?.tasks?.completed?.length === 0 ? (
