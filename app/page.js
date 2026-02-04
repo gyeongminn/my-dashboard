@@ -17,7 +17,9 @@ import {
   Inbox,
   PlayCircle,
   LogOut,
-  Plus
+  Plus,
+  CloudRain,
+  Cloud
 } from 'lucide-react';
 import TaskModal from './components/TaskModal';
 
@@ -26,6 +28,7 @@ const REFRESH_INTERVAL = parseInt(process.env.NEXT_PUBLIC_REFRESH_INTERVAL || '6
 export default function Dashboard() {
   const [notionData, setNotionData] = useState(null);
   const [calendarData, setCalendarData] = useState(null);
+  const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -34,16 +37,19 @@ export default function Dashboard() {
 
   const fetchData = useCallback(async () => {
     try {
-      const [notionRes, calendarRes] = await Promise.all([
+      const [notionRes, calendarRes, weatherRes] = await Promise.all([
         fetch('/api/notion?type=all'),
         fetch('/api/calendar?type=upcoming&days=7'),
+        fetch('/api/weather'),
       ]);
 
       const notion = await notionRes.json();
       const calendar = await calendarRes.json();
+      const weather = await weatherRes.json();
 
       if (notion.success) setNotionData(notion.data);
       if (calendar.success) setCalendarData(calendar.events);
+      if (weather.success) setWeatherData(weather.data);
       setLastUpdated(new Date());
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -230,8 +236,8 @@ export default function Dashboard() {
 
       {/* Dashboard Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* First Column (Mobile: 1st, Desktop: Left) - In Progress */}
-        <div className="lg:col-span-1 lg:order-2 space-y-6">
+        {/* Column 1: Mobile order-1 (진행중), Desktop order-2 (중앙) */}
+        <div className="order-1 lg:order-2 lg:col-span-1 space-y-6">
           {/* In Progress */}
           <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center gap-3 mb-4">
@@ -255,58 +261,35 @@ export default function Dashboard() {
               )}
             </div>
           </section>
-
-          {/* Waiting */}
-          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-amber-500/20 rounded-lg">
-                <Inbox className="w-5 h-5 text-amber-400" />
-              </div>
-              <h2 className="text-lg font-semibold">대기</h2>
-              <span className="ml-auto badge badge-waiting">
-                {notionData?.tasks?.waiting?.length || 0}
-              </span>
-            </div>
-            <div className="space-y-2 max-h-[300px] overflow-y-auto">
-              {notionData?.tasks?.waiting?.length === 0 ? (
-                <p className="text-surface-200 text-sm py-4 text-center">
-                  대기중인 작업이 없습니다
-                </p>
-              ) : (
-                notionData?.tasks?.waiting?.map((task, idx) => (
-                  <TaskCard key={task.id || idx} task={task} onClick={() => handleTaskClick(task)} />
-                ))
-              )}
-            </div>
-          </section>
-
-          {/* On Hold */}
-          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.25s' }}>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-gray-500/20 rounded-lg">
-                <ListTodo className="w-5 h-5 text-gray-400" />
-              </div>
-              <h2 className="text-lg font-semibold">보류</h2>
-              <span className="ml-auto badge badge-hold">
-                {notionData?.tasks?.onHold?.length || 0}
-              </span>
-            </div>
-            <div className="space-y-2 max-h-[300px] overflow-y-auto">
-              {notionData?.tasks?.onHold?.length === 0 ? (
-                <p className="text-surface-200 text-sm py-4 text-center">
-                  보류중인 작업이 없습니다
-                </p>
-              ) : (
-                notionData?.tasks?.onHold?.map((task, idx) => (
-                  <TaskCard key={task.id || idx} task={task} onClick={() => handleTaskClick(task)} />
-                ))
-              )}
-            </div>
-          </section>
         </div>
 
-        {/* Second Column (Mobile: 2nd, Desktop: Center) - Schedule */}
-        <div className="lg:col-span-1 lg:order-1 space-y-6">
+        {/* Column 2: Mobile order-2,3 (오늘일정, 다가오는일정), Desktop order-1 (왼쪽) */}
+        <div className="order-2 lg:order-1 lg:col-span-1 space-y-6">
+          {/* Weather */}
+          {weatherData && (
+            <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.05s' }}>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-sky-500/20 rounded-lg">
+                    <Cloud className="w-5 h-5 text-sky-400" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold">{weatherData.city}</h2>
+                    <p className="text-sm text-surface-200">{weatherData.description}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold">{weatherData.temp}°</div>
+                  <div className="text-xs text-surface-200">체감 {weatherData.feelsLike}°</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 mt-4 text-sm text-surface-200">
+                <span>💧 {weatherData.humidity}%</span>
+                <span>💨 {weatherData.windSpeed}m/s</span>
+              </div>
+            </section>
+          )}
+
           {/* Today's Schedule */}
           <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.15s' }}>
             <div className="flex items-center gap-3 mb-4">
@@ -365,8 +348,32 @@ export default function Dashboard() {
           </section>
         </div>
 
-        {/* Third Column (Mobile: 3rd, Desktop: Right) - Routines & Completed */}
-        <div className="lg:col-span-1 lg:order-3 space-y-6">
+        {/* Column 3: Mobile order-4,5,6,7 (대기, 루틴, 보류, 완료), Desktop order-3 (오른쪽) */}
+        <div className="order-3 lg:order-3 lg:col-span-1 space-y-6">
+          {/* Waiting */}
+          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.25s' }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-amber-500/20 rounded-lg">
+                <Inbox className="w-5 h-5 text-amber-400" />
+              </div>
+              <h2 className="text-lg font-semibold">대기</h2>
+              <span className="ml-auto badge badge-waiting">
+                {notionData?.tasks?.waiting?.length || 0}
+              </span>
+            </div>
+            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              {notionData?.tasks?.waiting?.length === 0 ? (
+                <p className="text-surface-200 text-sm py-4 text-center">
+                  대기중인 작업이 없습니다
+                </p>
+              ) : (
+                notionData?.tasks?.waiting?.map((task, idx) => (
+                  <TaskCard key={task.id || idx} task={task} onClick={() => handleTaskClick(task)} />
+                ))
+              )}
+            </div>
+          </section>
+
           {/* Routines */}
           <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center gap-3 mb-4">
@@ -391,8 +398,32 @@ export default function Dashboard() {
             </div>
           </section>
 
-          {/* Recently Completed */}
+          {/* On Hold */}
           <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.35s' }}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="p-2 bg-gray-500/20 rounded-lg">
+                <ListTodo className="w-5 h-5 text-gray-400" />
+              </div>
+              <h2 className="text-lg font-semibold">보류</h2>
+              <span className="ml-auto badge badge-hold">
+                {notionData?.tasks?.onHold?.length || 0}
+              </span>
+            </div>
+            <div className="space-y-2 max-h-[300px] overflow-y-auto">
+              {notionData?.tasks?.onHold?.length === 0 ? (
+                <p className="text-surface-200 text-sm py-4 text-center">
+                  보류중인 작업이 없습니다
+                </p>
+              ) : (
+                notionData?.tasks?.onHold?.map((task, idx) => (
+                  <TaskCard key={task.id || idx} task={task} onClick={() => handleTaskClick(task)} />
+                ))
+              )}
+            </div>
+          </section>
+
+          {/* Recently Completed */}
+          <section className="card p-6 animate-slide-up" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center gap-3 mb-4">
               <div className="p-2 bg-emerald-500/20 rounded-lg">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
